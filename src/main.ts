@@ -28,7 +28,10 @@ async function bootstrap() {
   );
 
   // Configuration du préfixe global (doit être avant Swagger)
-  app.setGlobalPrefix('api/v1');
+  // Note: Le health check est exclu du préfixe global
+  app.setGlobalPrefix('api/v1', {
+    exclude: ['health'],
+  });
 
   // Configuration Swagger (après le préfixe global pour inclure le préfixe dans les routes)
   const config = new DocumentBuilder()
@@ -42,10 +45,12 @@ async function bootstrap() {
   SwaggerModule.setup('api/docs', app, document);
 
   const port = process.env.API_PORT || 5550;
-  await app.listen(port, '0.0.0.0'); // Listen on all interfaces
+  const host = process.env.API_HOST || '0.0.0.0'; // Listen on all interfaces by default
+  
+  await app.listen(port, host);
 
-  console.log(`🚀 API Meditache démarrée sur le port ${port}`);
-  console.log(`📚 Documentation Swagger disponible sur http://localhost:${port}/api/docs`);
+  console.log(`🚀 API Meditache démarrée sur ${host}:${port}`);
+  console.log(`📚 Documentation Swagger disponible sur http://${host === '0.0.0.0' ? 'localhost' : host}:${port}/api/docs`);
 }
 
 bootstrap();
