@@ -42,7 +42,7 @@ FROM base AS production
 
 # Copier uniquement les dépendances de production
 COPY package*.json ./
-RUN npm ci --only=production
+RUN npm ci --omit=dev
 
 # Copier le code compilé depuis le stage build
 COPY --from=build /app/dist ./dist
