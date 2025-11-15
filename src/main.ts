@@ -27,7 +27,10 @@ async function bootstrap() {
     }),
   );
 
-  // Configuration Swagger
+  // Configuration du préfixe global (doit être avant Swagger)
+  app.setGlobalPrefix('api/v1');
+
+  // Configuration Swagger (après le préfixe global pour inclure le préfixe dans les routes)
   const config = new DocumentBuilder()
     .setTitle('Meditache API')
     .setDescription('API pour la gestion des rappels d\'interventions médicales')
@@ -37,9 +40,6 @@ async function bootstrap() {
   
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api/docs', app, document);
-
-  // Configuration du préfixe global
-  app.setGlobalPrefix('api/v1');
 
   const port = process.env.API_PORT || 5550;
   await app.listen(port, '0.0.0.0'); // Listen on all interfaces
