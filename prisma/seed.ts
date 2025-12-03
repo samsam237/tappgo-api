@@ -42,6 +42,32 @@ async function main() {
     },
   });
 
+  // Créer un utilisateur pour le docteur Fotso
+  const fotsoPassword = await bcrypt.hash('fotso123', 10);
+  const fotsoUser = await prisma.user.upsert({
+    where: { email: 'gwabap.fotso@tappgo.net' },
+    update: {},
+    create: {
+      email: 'gwabap.fotso@tappgo.net',
+      phone: '+237 6 00 00 00 00',
+      role: 'DOCTOR',
+      timezone: 'Africa/Douala',
+      password: fotsoPassword,
+      organizationId: organization.id,
+    },
+  });
+
+  // Créer le docteur Fotso
+  const doctorFotso = await prisma.doctor.upsert({
+    where: { userId: fotsoUser.id },
+    update: {},
+    create: {
+      userId: fotsoUser.id,
+      speciality: 'Médecine Générale',
+      license: 'MG002',
+    },
+  });
+
   // Créer quelques patients d'exemple
   const patients = await Promise.all([
     prisma.person.upsert({
@@ -207,7 +233,7 @@ async function main() {
   console.log(`📊 Données créées :
   - 1 Organisation: ${organization.name}
   - 1 Utilisateur Admin: ${adminUser.email}
-  - 1 Médecin: ${doctor.speciality}
+  - 2 Médecins: ${doctor.speciality}, ${doctorFotso.speciality} (${fotsoUser.email})
   - 3 Patients
   - 2 Consultations passées
   - 3 Interventions programmées
