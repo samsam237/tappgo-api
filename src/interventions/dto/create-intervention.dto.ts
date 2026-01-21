@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsString, IsDateString, IsEnum, IsOptional, IsArray, ValidateNested, IsNumber } from 'class-validator';
+import { IsString, IsDateString, IsEnum, IsOptional, IsArray, ValidateNested, IsNumber, IsInt, Min } from 'class-validator';
 import { Type } from 'class-transformer';
 
 export class ReminderRuleDto {
@@ -50,6 +50,15 @@ export class CreateInterventionDto {
   title: string;
 
   @ApiProperty({
+    description: 'ID du type d\'intervention (nomenclature)',
+    example: 'seed_visite_a_domicile',
+    required: false,
+  })
+  @IsOptional()
+  @IsString()
+  interventionTypeId?: string;
+
+  @ApiProperty({
     description: 'Description de l\'intervention',
     example: 'Contrôle glycémique et adaptation du traitement',
     required: false,
@@ -57,6 +66,34 @@ export class CreateInterventionDto {
   @IsOptional()
   @IsString()
   description?: string;
+
+  @ApiProperty({
+    description: 'Type de coût estimatif',
+    enum: ['FREE', 'PAID'],
+    required: false,
+    example: 'FREE',
+  })
+  @IsOptional()
+  @IsEnum(['FREE', 'PAID'])
+  costType?: string;
+
+  @ApiProperty({
+    description: 'Montant estimatif (obligatoire si costType=PAID)',
+    required: false,
+    example: 5000,
+  })
+  @IsOptional()
+  @IsInt()
+  @Min(0)
+  costAmount?: number;
+
+  @ApiProperty({
+    description: 'Rapport / compte rendu d\'intervention',
+    required: false,
+  })
+  @IsOptional()
+  @IsString()
+  reportText?: string;
 
   @ApiProperty({
     description: 'Date et heure programmée (ISO 8601)',

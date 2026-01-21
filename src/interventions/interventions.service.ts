@@ -43,6 +43,7 @@ export class InterventionsService {
         ...interventionData,
         scheduledAtUtc,
         status: 'PLANNED',
+        // Stocker reportAttachments via update endpoint / upload, mais accepter aussi un tableau côté DTO update
       },
       include: {
         person: true,
@@ -53,6 +54,7 @@ export class InterventionsService {
         },
         reminders: true,
         rules: true,
+        interventionType: true,
       },
     });
 
@@ -119,6 +121,7 @@ export class InterventionsService {
             user: true,
           },
         },
+        interventionType: true,
         reminders: {
           orderBy: { plannedSendUtc: 'asc' },
         },
@@ -138,6 +141,7 @@ export class InterventionsService {
             user: true,
           },
         },
+        interventionType: true,
         reminders: {
           orderBy: { plannedSendUtc: 'asc' },
           include: {
@@ -178,6 +182,15 @@ export class InterventionsService {
     if (updateData.priority !== undefined) validUpdateData.priority = updateData.priority;
     if (updateData.status !== undefined) validUpdateData.status = updateData.status;
     if (updateData.location !== undefined) validUpdateData.location = updateData.location;
+    if ((updateData as any).interventionTypeId !== undefined) validUpdateData.interventionTypeId = (updateData as any).interventionTypeId;
+    if ((updateData as any).costType !== undefined) validUpdateData.costType = (updateData as any).costType;
+    if ((updateData as any).costAmount !== undefined) validUpdateData.costAmount = (updateData as any).costAmount;
+    if ((updateData as any).reportText !== undefined) validUpdateData.reportText = (updateData as any).reportText;
+    if ((updateInterventionDto as any).reportAttachments !== undefined) {
+      validUpdateData.reportAttachments = (updateInterventionDto as any).reportAttachments
+        ? JSON.stringify((updateInterventionDto as any).reportAttachments)
+        : null;
+    }
 
     const updatedIntervention = await this.prisma.intervention.update({
       where: { id },
@@ -194,6 +207,7 @@ export class InterventionsService {
         },
         reminders: true,
         rules: true,
+        interventionType: true,
       },
     });
 

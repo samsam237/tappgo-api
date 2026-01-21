@@ -11,6 +11,7 @@ import { InterventionsModule } from './interventions/interventions.module';
 import { RemindersModule } from './reminders/reminders.module';
 import { NotificationsModule } from './notifications/notifications.module';
 import { HealthModule } from './health/health.module';
+import { InterventionTypesModule } from './intervention-types/intervention-types.module';
 
 @Module({
   imports: [
@@ -45,6 +46,7 @@ import { HealthModule } from './health/health.module';
     PeopleModule,
     ConsultationsModule,
     InterventionsModule,
+    InterventionTypesModule,
     RemindersModule,
     NotificationsModule,
     HealthModule,

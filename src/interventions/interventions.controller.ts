@@ -10,7 +10,11 @@ import {
   UseGuards,
   Request,
 } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiQuery } from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiQuery, ApiConsumes } from '@nestjs/swagger';
+import { UseInterceptors, UploadedFiles } from '@nestjs/common';
+import { FilesInterceptor } from '@nestjs/platform-express';
+import { diskStorage } from 'multer';
+import { extname } from 'path';
 import { InterventionsService } from './interventions.service';
 import { CreateInterventionDto } from './dto/create-intervention.dto';
 import { UpdateInterventionDto } from './dto/update-intervention.dto';
@@ -86,6 +90,39 @@ export class InterventionsController {
     @Body() updateInterventionDto: UpdateInterventionDto,
   ) {
     return this.interventionsService.update(id, updateInterventionDto);
+  }
+
+  @Post(':id/report-attachments')
+  @Roles('DOCTOR', 'ADMIN')
+  @ApiOperation({ summary: 'Ajouter des pièces jointes au rapport d’intervention (upload)' })
+  @ApiConsumes('multipart/form-data')
+  @UseInterceptors(
+    FilesInterceptor('files', 5, {
+      storage: diskStorage({
+        destination: './uploads/interventions',
+        filename: (req, file, cb) => {
+          const uniqueSuffix = `${Date.now()}-${Math.round(Math.random() * 1e9)}`;
+          cb(null, `${uniqueSuffix}${extname(file.originalname)}`);
+        },
+      }),
+      limits: { fileSize: 5 * 1024 * 1024 }, // 5MB
+    }),
+  )
+  async uploadReportAttachments(
+    @Param('id') id: string,
+    @UploadedFiles() files: Array<Express.Multer.File>,
+  ) {
+    const urls = (files || []).map((f) => `/uploads/interventions/${f.filename}`);
+    // Merge avec l'existant via update()
+    const current = await this.interventionsService.findOne(id);
+    let existing: string[] = [];
+    try {
+      existing = (current as any).reportAttachments ? JSON.parse((current as any).reportAttachments) : [];
+    } catch {
+      existing = [];
+    }
+    const merged = [...existing, ...urls];
+    return this.interventionsService.update(id, { reportAttachments: merged } as any);
   }
 
   @Delete(':id')

@@ -194,6 +194,32 @@ async function main() {
     }),
   ]);
 
+  // Nomenclature initiale des types d'intervention (globale)
+  const defaultInterventionTypes = [
+    'Visite à domicile',
+    'Suivi diabète',
+    'Accompagnement consultation',
+    'Transport patient',
+    'Campagne de sensibilisation',
+    'Pansement',
+    'Soins à domicile',
+    'Consultation à domicile',
+  ];
+
+  await Promise.all(
+    defaultInterventionTypes.map((name) =>
+      prisma.interventionType.upsert({
+        where: { id: `seed_${name.toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_+|_+$/g, '')}` },
+        update: { name, isActive: true },
+        create: {
+          id: `seed_${name.toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_+|_+$/g, '')}`,
+          name,
+          isActive: true,
+        },
+      }),
+    ),
+  );
+
   // Créer les règles de rappel par défaut pour chaque intervention
   for (const intervention of interventions) {
     // Règle J-1 (24h avant)

@@ -57,6 +57,7 @@ model Doctor {
   // Relations
   consultations Consultation[]
   interventions Intervention[]
+  createdInterventionTypes InterventionType[] @relation("DoctorCreatedInterventionTypes")
   
   @@map("doctors")
 }
@@ -68,6 +69,7 @@ model Person {
   phone     String?
   email     String?
   address   String?
+  tappNumber String? @unique
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   
@@ -121,8 +123,13 @@ model Intervention {
   id             String   @id @default(cuid())
   personId       String
   doctorId       String
+  interventionTypeId String?
   title          String
   description    String?
+  costType       String?  // FREE, PAID
+  costAmount     Int?     // Montant (ex: XAF)
+  reportText     String?
+  reportAttachments String? // JSON string: URLs des fichiers joints
   scheduledAtUtc DateTime
   priority       String   @default("NORMAL") // NORMAL, URGENT
   status         String   @default("PLANNED") // PLANNED, IN_PROGRESS, DONE, CANCELED
@@ -133,6 +140,7 @@ model Intervention {
   // Relations
   person    Person        @relation(fields: [personId], references: [id])
   doctor    Doctor        @relation(fields: [doctorId], references: [id])
+  interventionType InterventionType? @relation(fields: [interventionTypeId], references: [id])
   reminders Reminder[]
   rules     ReminderRule[]
   
@@ -140,6 +148,23 @@ model Intervention {
   @@index([scheduledAtUtc])
   @@index([personId])
   @@map("interventions")
+}
+
+model InterventionType {
+  id              String   @id @default(cuid())
+  name            String
+  createdByDoctorId String?
+  isActive        Boolean  @default(true)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  // Relations
+  createdByDoctor Doctor? @relation("DoctorCreatedInterventionTypes", fields: [createdByDoctorId], references: [id], onDelete: SetNull)
+  interventions   Intervention[]
+
+  @@index([name])
+  @@index([createdByDoctorId])
+  @@map("intervention_types")
 }
 
 model ReminderRule {

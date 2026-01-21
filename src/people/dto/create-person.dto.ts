@@ -44,4 +44,13 @@ export class CreatePersonDto {
   @IsOptional()
   @IsString()
   address?: string;
+
+  @ApiProperty({
+    description: 'Numéro TAPP (identifiant interne patient/agent)',
+    example: 'TAPP-000123',
+    required: false,
+  })
+  @IsOptional()
+  @IsString()
+  tappNumber?: string;
 }
